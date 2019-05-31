@@ -81,8 +81,13 @@ module Kafka
           topic_partitions[topic] ||= Set.new
           topic_partitions[topic].add(partition)
 
-          messages_for_broker[broker] ||= MessageBuffer.new
+          puts "SDASDASDASD #{broker.object_id}"
+
+          messages_for_broker[broker] ||= MessageBuffer.new(broker.object_id)
           messages_for_broker[broker].concat(messages, topic: topic, partition: partition)
+
+
+
         rescue Kafka::Error => e
           @logger.error "Could not connect to leader for partition #{topic}/#{partition}: #{e.message}"
 

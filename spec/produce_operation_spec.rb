@@ -4,7 +4,7 @@ describe Kafka::ProduceOperation do
   let(:cluster) { double(:cluster) }
   let(:transaction_manager) { double(:transaction_manager) }
   let(:compressor) { double(:compressor) }
-  let(:buffer) { Kafka::MessageBuffer.new }
+  let(:buffer) { Kafka::MessageBuffer.new("test") }
   let(:logger) { LOGGER }
   let(:instrumenter) { Kafka::Instrumenter.new(client_id: "test") }
 
@@ -42,11 +42,12 @@ describe Kafka::ProduceOperation do
   }
 
   before do
+    buffer.clear
     allow(cluster).to receive(:get_leader).with('hello', 0).and_return(broker_1)
     allow(cluster).to receive(:get_leader).with('hello', 1).and_return(broker_2)
     allow(cluster).to receive(:get_leader).with('hi', 0).and_return(broker_3)
     allow(cluster).to receive(:get_leader).with('hi', 1).and_return(broker_3)
-    allow(cluster).to receive(:get_leader).with('bye', 0).and_return(broker_3)
+    allow(cluster).to receive(:get_leader).with('bye', "0").and_return(broker_3)
 
     allow(broker_1).to receive(:produce) do |request|
       generate_successful_produce_response(request)
@@ -442,6 +443,7 @@ describe Kafka::ProduceOperation do
 end
 
 def add_test_messages_to_buffer
+  buffer.clear
   buffer.write(value: "Hello World", key: 1, topic: 'hello', partition: 0)
   buffer.write(value: "Bye World", key: 2, topic: 'hello', partition: 1)
   buffer.write(value: "Greeting", key: 3, topic: 'hi', partition: 0)

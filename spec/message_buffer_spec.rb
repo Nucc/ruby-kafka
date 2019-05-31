@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 describe Kafka::MessageBuffer do
-  let(:buffer) { Kafka::MessageBuffer.new }
+  let(:buffer) { Kafka::MessageBuffer.new("test") }
+
+  before { buffer.clear }
 
   describe "#concat" do
     it "adds the messages to the buffer" do

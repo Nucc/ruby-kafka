@@ -146,10 +146,10 @@ module Kafka
       @target_topics = Set.new
 
       # A buffer organized by topic/partition.
-      @buffer = MessageBuffer.new
+      @buffer = MessageBuffer.new("producer")
 
       # Messages added by `#produce` but not yet assigned a partition.
-      @pending_message_queue = PendingMessageQueue.new
+      @pending_message_queue = PendingMessageQueue.new(self.to_s)
     end
 
     def to_s
@@ -391,6 +391,11 @@ module Kafka
         attempt += 1
 
         notification[:attempts] = attempt
+
+        puts "ATT"
+        puts attempt
+
+#        require 'byebug'; byebug
 
         begin
           @cluster.refresh_metadata_if_necessary!

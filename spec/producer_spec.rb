@@ -18,8 +18,8 @@ describe Kafka::Producer do
     allow(cluster).to receive(:refresh_metadata_if_necessary!)
     allow(cluster).to receive(:add_target_topics)
 
-    allow(cluster).to receive(:get_leader).with("greetings", 0) { broker1 }
-    allow(cluster).to receive(:get_leader).with("greetings", 1) { broker2 }
+    allow(cluster).to receive(:get_leader).with("greetings", "0") { broker1 }
+    allow(cluster).to receive(:get_leader).with("greetings", "1") { broker2 }
 
     allow(compressor).to receive(:compress) {|message_set| message_set }
 
@@ -184,7 +184,10 @@ describe Kafka::Producer do
       partitions_for_call_count = 0
       allow(cluster).to receive(:partitions_for) do
         partitions_for_call_count += 1
-        raise(Kafka::UnknownTopicOrPartition.new) if partitions_for_call_count == 1
+        if partitions_for_call_count == 1
+          puts "RAISE"
+          raise(Kafka::UnknownTopicOrPartition.new)
+        end
         [0, 1]
       end
 
@@ -265,6 +268,9 @@ describe Kafka::Producer do
 
       producer.produce("hello1", topic: "greetings", partition: 0)
       producer.deliver_messages
+
+      p producer.buffer_size
+      p "asdasdasd"
 
       # The producer was not able to write the message, but it's still buffered.
       expect(producer.buffer_size).to eq 0
@@ -368,6 +374,10 @@ describe Kafka::Producer do
       max_buffer_size: 1000,
       max_buffer_bytesize: 10_000_000,
     }
+
+    a = Kafka::MessageBuffer.new("producer")
+    a.clear
+    p a.size
 
     Kafka::Producer.new(**default_options.merge(options))
   end
